@@ -54,11 +54,12 @@ The note body MUST contain exactly these five sections, in this order:
 ## Problem & formulation
 ## Method
 ## Experiments
-## Limitations & cautions
+## Limitations & future work
 
-Each section: clear, concise, faithful to the paper. In "Limitations & cautions"
-include both stated limitations and things a careful reader should watch for
-(assumptions, scope, possible overclaims).
+Each section MUST be summarized ENTIRELY from the paper itself: clear, concise,
+faithful, and strictly factual. Do NOT add your own commentary, critique,
+opinions, or cautions. In "Limitations & future work" report only the
+limitations and future-work directions the paper itself states.
 
 YAML frontmatter MUST be:
 ---
