@@ -56,10 +56,29 @@ The note body MUST contain exactly these five sections, in this order:
 ## Experiments
 ## Limitations & future work
 
-Each section MUST be summarized ENTIRELY from the paper itself: clear, concise,
-faithful, and strictly factual. Do NOT add your own commentary, critique,
-opinions, or cautions. In "Limitations & future work" report only the
-limitations and future-work directions the paper itself states.
+Each of these five sections MUST be summarized ENTIRELY from the paper itself:
+clear, faithful, and strictly factual. Do NOT add your own commentary,
+critique, opinions, or cautions in these five sections. In "Limitations &
+future work" report only the limitations and future-work directions the paper
+itself states.
+
+Keep the summary CONCISE. Capture only the essential points: prefer a few terse
+bullets per section over exhaustive detail, omit minor or redundant information,
+and keep each bullet to a single short sentence. Favor brevity over completeness.
+
+After the five sections, append exactly ONE final Obsidian callout block (this
+is the ONLY place your own analysis belongs):
+>[!note] Assistant Comment
+> - <key point, caveat, or caution a reader should be careful about>
+> - <another point>
+
+Formatting rules for this block:
+- The first line MUST be exactly ">[!note] Assistant Comment".
+- EVERY subsequent line of the block MUST start with "> ".
+- Use this block to summarize the key points you think a reader should be
+  careful or cautious about in this paper (e.g. unstated assumptions, weak or
+  narrow evaluation, threats to validity, over-claimed results, reproducibility
+  or generalization concerns). This is your own judgement, not the paper's.
 
 YAML frontmatter MUST be:
 ---

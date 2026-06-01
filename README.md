@@ -1,6 +1,6 @@
 ---
 created: 2026-05-31T15:54
-updated: 2026-05-31T18:38
+updated: 2026-05-31T19:06
 ---
 # Paper-reading assistant
 
@@ -33,7 +33,11 @@ vocabulary) followed by five sections:
 2. Problem & formulation
 3. Method
 4. Experiments
-5. Limitations & cautions
+5. Limitations & future work
+
+and a final `>[!note] Assistant Comment` callout — the only part written by the
+assistant rather than summarized from the paper — flagging key points a reader
+should be careful or cautious about.
 
 ## Notes
 
