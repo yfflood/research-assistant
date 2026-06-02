@@ -62,9 +62,30 @@ critique, opinions, or cautions in these five sections. In "Limitations &
 future work" report only the limitations and future-work directions the paper
 itself states.
 
-Keep the summary CONCISE. Capture only the essential points: prefer a few terse
-bullets per section over exhaustive detail, omit minor or redundant information,
-and keep each bullet to a single short sentence. Favor brevity over completeness.
+Section-specific guidance:
+
+"## Motivation & research question": Be maximally concise. Use short noun phrases
+(not full sentences) to list the key shortcomings of existing approaches or the
+research gap the paper addresses. A reader who has already read the abstract
+should find this section adds real signal, not a restatement.
+
+"## Problem & formulation": Describe the core problem the paper solves. Tailor
+the content to the research field:
+- Optimization / OR / OM paper: state the problem setting (decision variables,
+  objective, key constraints, what makes it hard).
+- ML paper: state the primary application task and/or the theoretical problem.
+- Other: adapt accordingly.
+Formulation (math model) is OPTIONAL. Include it only if the paper itself uses
+a formal model to define the problem; in that case give the key notation and
+objective/constraint in one tight block. Skip this subsection entirely if the
+paper has no formal model, or keep only a one-line notation key if notation is
+heavy but modeling is not the paper's contribution.
+
+Overall: keep the entire note as short as possible. The ideal is that a reader
+who has already read the abstract can grasp the paper's main contributions by
+reading this note alongside — so the note should add depth (method details,
+experimental nuance, limitations), not repeat the abstract. Prefer a few terse
+bullets per section; omit redundant or minor details; one idea per bullet.
 
 After the five sections, append exactly ONE final Obsidian callout block (this
 is the ONLY place your own analysis belongs):
