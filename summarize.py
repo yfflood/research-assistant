@@ -49,37 +49,75 @@ Match the house style of the vault exactly:
 - Use Obsidian callouts like ">[!quote]" for verbatim quotes when useful.
 - Section headers use "## ".
 
-The note body MUST contain exactly these five sections, in this order:
+STEP 1 — Classify the paper into exactly ONE archetype by its PRIMARY
+contribution (if it blends types, choose the dominant one):
+- method:    proposes a new method / model / algorithm / system, evaluated
+             empirically.
+- empirical: the contribution is findings from a study, measurement, or
+             analysis — NOT a new method.
+- review:    a survey / review / tutorial that synthesizes a body of work.
+- theory:    the contribution is theoretical — formal models, bounds, proofs,
+             characterizations.
+
+STEP 2 — Structure the note body using that archetype's section skeleton:
+
+method:
 ## Motivation & research question
 ## Problem & formulation
 ## Method
 ## Experiments
 ## Limitations & future work
 
-Each of these five sections MUST be summarized ENTIRELY from the paper itself:
-clear, faithful, and strictly factual. Do NOT add your own commentary,
-critique, opinions, or cautions in these five sections. In "Limitations &
-future work" report only the limitations and future-work directions the paper
-itself states.
+empirical:
+## Motivation & research question
+## Data & study design
+## Findings
+## Implications
+## Limitations & future work
+
+review:
+## Scope & motivation
+## Organizing framework
+## Key themes & findings
+## Open problems & future directions
+
+theory:
+## Motivation & research question
+## Setup & assumptions
+## Main results
+## Proof ideas
+## Implications & limitations
+
+The skeleton is a strong default, not a straitjacket: you MAY rename, merge,
+drop, or add a section when the paper's own structure clearly calls for it.
+Headers must name real content and stay terse.
+
+Every body section MUST be summarized ENTIRELY from the paper itself: clear,
+faithful, and strictly factual. Do NOT add your own commentary, critique,
+opinions, or cautions in the body. In any "Limitations / future work / open
+problems" section report only what the paper itself states.
 
 Section-specific guidance:
 
-"## Motivation & research question": Be maximally concise. Use short noun phrases
-(not full sentences) to list the key shortcomings of existing approaches or the
-research gap the paper addresses. A reader who has already read the abstract
-should find this section adds real signal, not a restatement.
+Opening section ("Motivation & research question" / "Scope & motivation"): Be
+maximally concise. Use short noun phrases (not full sentences) to list the key
+shortcomings of existing approaches or the research gap the paper addresses. A
+reader who has already read the abstract should find this section adds real
+signal, not a restatement.
 
-"## Problem & formulation": Describe the core problem the paper solves. Tailor
-the content to the research field:
+Problem / setup section ("Problem & formulation" / "Setup & assumptions" /
+"Data & study design"): Describe the core problem, setting, or study design.
+Tailor the content to the research field:
 - Optimization / OR / OM paper: state the problem setting (decision variables,
   objective, key constraints, what makes it hard).
 - ML paper: state the primary application task and/or the theoretical problem.
+- Empirical study: state the data, sample, and study/experimental design.
 - Other: adapt accordingly.
-Formulation (math model) is OPTIONAL. Include it only if the paper itself uses
-a formal model to define the problem; in that case give the key notation and
-objective/constraint in one tight block. Skip this subsection entirely if the
-paper has no formal model, or keep only a one-line notation key if notation is
-heavy but modeling is not the paper's contribution.
+A formal math model is OPTIONAL. Include it only if the paper itself uses one to
+define the problem; in that case give the key notation and objective/constraint
+in one tight block. Skip it entirely if the paper has no formal model, or keep
+only a one-line notation key if notation is heavy but modeling is not the
+paper's contribution.
 
 Overall: keep the entire note as short as possible. The ideal is that a reader
 who has already read the abstract can grasp the paper's main contributions by
@@ -127,6 +165,7 @@ content):
 STYLE_EXAMPLE
 
 Output format — return EXACTLY this and nothing else:
+ARCHETYPE: <method|empirical|review|theory>
 TITLE: <the paper's exact title>
 {delim}
 <the full markdown note: frontmatter then body>
@@ -184,15 +223,22 @@ def save_processed(log):
 
 
 def summarize(client, system_prompt, pdf_path):
-    """Returns (note_filename, note_text) or raises."""
+    """Returns (note_filename, note_text, archetype) or raises."""
     paper = extract_pdf_text(pdf_path)
     if not paper.strip():
         raise ValueError("no extractable text (scanned/image-only PDF?)")
+    # NOTE: the proxy now drops/overrides the `system` role for this model, so
+    # the instructions must travel in the `user` turn to be honored. We still
+    # send them as system too (harmless) for endpoints that respect it.
+    user_content = (
+        f"{system_prompt}\n\n"
+        f"---\nPaper filename: {pdf_path.name}\n\n{paper}"
+    )
     resp = client.chat.completions.create(
         model=MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Paper filename: {pdf_path.name}\n\n{paper}"},
+            {"role": "user", "content": user_content},
         ],
     )
     content = resp.choices[0].message.content
@@ -202,7 +248,9 @@ def summarize(client, system_prompt, pdf_path):
     m = re.search(r"TITLE:\s*(.+)", head)
     if not m:
         raise ValueError("model response missing TITLE")
-    return title_to_filename(m.group(1)), note.strip() + "\n"
+    a = re.search(r"ARCHETYPE:\s*(\w+)", head)
+    archetype = a.group(1).lower() if a else "?"
+    return title_to_filename(m.group(1)), note.strip() + "\n", archetype
 
 
 def main():
@@ -229,7 +277,7 @@ def main():
     print(f"Processing {len(pdfs)} PDF(s) with model '{MODEL}'...")
     for pdf in pdfs:
         try:
-            fname, note = summarize(client, system_prompt, pdf)
+            fname, note, archetype = summarize(client, system_prompt, pdf)
         except Exception as e:  # keep going on per-paper failures
             print(f"  SKIP  {pdf.name}: {e}")
             continue
@@ -238,8 +286,8 @@ def main():
             print(f"  EXISTS {fname} (skipped write)")
         else:
             out.write_text(note, encoding="utf-8")
-            print(f"  OK    {pdf.name} -> {fname}")
-        log[pdf.name] = {"note": fname, "at": now}
+            print(f"  OK    {pdf.name} -> {fname}  [{archetype}]")
+        log[pdf.name] = {"note": fname, "at": now, "archetype": archetype}
         save_processed(log)
 
     print("Done.")
