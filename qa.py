@@ -81,6 +81,38 @@ def _find_pdf(name):
     return cand if cand.exists() else None
 
 
+def _norm(s):
+    """Lowercase, drop punctuation, collapse whitespace — for fuzzy matching."""
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", s.lower())).strip()
+
+
+def _pdf_for_note(note_path):
+    """Find the source PDF for a note by matching titles against papers/.
+
+    The processed log is the authoritative note->PDF link, but notes made
+    before the log existed (or after it was reset) aren't recorded there.
+    PDFs are named '<authors>-<year>_<venue>_<title>.pdf', so a note's title
+    is a substring of its PDF's filename once both are normalized. Without
+    this fallback such notes resolve to pdf=None and qa.py answers from the
+    note alone, ignoring the paper.
+    """
+    if note_path is None:
+        return None
+    stem = _norm(note_path.stem)
+    toks = set(stem.split())
+    if not toks:
+        return None
+    substr, subset = None, None
+    for pdf in PAPERS_DIR.glob("*.pdf"):
+        norm = _norm(pdf.stem)
+        if stem in norm:  # tightest, most reliable match
+            if substr is None or len(pdf.name) < len(substr.name):
+                substr = pdf
+        elif len(toks) >= 4 and toks <= set(norm.split()):  # all words present
+            subset = subset or pdf
+    return substr or subset
+
+
 def resolve_target(arg, log):
     """Return (pdf_path, note_path); either may be None. Exit if both missing."""
     pdf = note = None
@@ -97,6 +129,8 @@ def resolve_target(arg, log):
                 if entry.get("note") == note.name:
                     pdf = _find_pdf(pdf_name)
                     break
+            if pdf is None:  # not in the log — match against papers/ by title
+                pdf = _pdf_for_note(note)
 
     if pdf is None and note is None:
         sys.exit(f"error: could not find a paper or note matching '{arg}'")
@@ -119,7 +153,8 @@ def pick_target(log):
         items.append((label, pdf_name, note))
     for f in sorted(PENDING_DIR.glob("*.md")):
         if f.name not in seen_notes:
-            items.append((f.stem, None, f))
+            pdf = _pdf_for_note(f)
+            items.append((f.stem, pdf.name if pdf else None, f))
 
     if not items:
         sys.exit("error: no papers or notes found to ask about.")
@@ -141,8 +176,12 @@ def pick_target(log):
 # --- Context ------------------------------------------------------------------
 
 def build_first_user(pdf_path, note_path, question):
-    """Bundle the materials with the first question."""
-    parts = []
+    """Bundle the materials with the first question.
+
+    The proxy drops/overrides the `system` role for this model, so the rules
+    must ride along in the first user turn to actually take effect.
+    """
+    parts = [SYSTEM_PROMPT.strip()]
     if pdf_path is not None:
         text = extract_pdf_text(pdf_path)
         if text.strip():
