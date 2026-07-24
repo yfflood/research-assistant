@@ -97,6 +97,30 @@ faithful, and strictly factual. Do NOT add your own commentary, critique,
 opinions, or cautions in the body. In any "Limitations / future work / open
 problems" section report only what the paper itself states.
 
+Depth allocation (important): Do not spread words evenly across a section.
+Within "Method" / "Main results" / "Proof ideas" / "Findings" (whichever
+applies), first identify the 1-3 things that are genuinely non-trivial or hard
+to penetrate from a quick read — e.g. how a key derivative/gradient/bound is
+derived, the specific mechanism of a novel architecture or algorithm, a proof
+technique, a non-obvious trick that makes the method work. Reconstruct THOSE
+faithfully and in enough step-by-step detail that a reader could follow the
+reasoning without opening the paper — this is the part worth spending tokens
+on. Everything else — standard components, well-known techniques, routine
+setup (e.g. "uses Adam", "standard transformer backbone", "applies a known
+lemma") — compress to a single bullet or a short clause; do not explain what
+is easy to infer or already common knowledge. The resulting section should
+read unevenly: dense where the paper is hard, terse where it isn't. This is
+about depth, not exhaustiveness — still be comprehensive in COVERAGE (don't
+omit a component entirely), just uneven in DETAIL.
+
+Notation discipline: every symbol or piece of math notation you use anywhere
+in the note ($x$, $\theta$, $\mathcal{L}$, etc.) must be introduced somewhere
+in the note, at or before its first use. The introduction does not need to be
+formal — a short parenthetical or clause is enough (e.g. "$\theta$ (model
+parameters)", "$\mathcal{D}$ (training set)") — but a reader must never hit a
+symbol with no indication of what it means. Never carry over notation from the
+paper without also carrying its meaning.
+
 Section-specific guidance:
 
 Opening section ("Motivation & research question" / "Scope & motivation"): Be
